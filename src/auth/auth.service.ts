@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcrypt';
 import { UserDocument } from 'src/schemas/user.schema';
 import { LoginResponse, RegisterUserDto } from 'src/users/dto/registerUser.dto';
+import { MongooseError } from 'mongoose';
 
 @Injectable()
 export class AuthService {
@@ -17,7 +18,6 @@ export class AuthService {
     const salt = await bcrypt.genSalt(saltRounds);
     return await bcrypt.hash(password, salt);
   }
-
 
   async login(user: any): Promise<LoginResponse> {
     const payload = { username: user.username, sub: user.id };
@@ -42,14 +42,17 @@ export class AuthService {
       const hashedPassword = await this.hashPassword(user.password);
       const createdUser = await this.usersService.create({
         ...user,
-        // username: user.username,
-        // email: user.email,
         password: hashedPassword,
       });
-      console.log(createdUser);
       return this.login(createdUser);
-    } catch (error) {
-      throw error;
+    } catch (error: any) {
+      if (error.code === 11000) {
+        throw new HttpException(
+          `Пользователь уже зарегистрирован`,
+          HttpStatus.CONFLICT,
+        );
+      }
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
