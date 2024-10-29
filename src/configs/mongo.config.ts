@@ -21,3 +21,6 @@ const getMongoString = (configService: ConfigService) =>
   configService.get('MONGO_PORT') +
   '/' +
   configService.get('MONGO_AUTHDATABASE');
+
+
+  // mongodb://admin:admin@localhost:27017

@@ -18,6 +18,7 @@ export class AuthService {
     return await bcrypt.hash(password, salt);
   }
 
+
   async login(user: any): Promise<LoginResponse> {
     const payload = { username: user.username, sub: user.id };
     console.log(payload);
@@ -40,8 +41,9 @@ export class AuthService {
     try {
       const hashedPassword = await this.hashPassword(user.password);
       const createdUser = await this.usersService.create({
-        username: user.username,
-        email: user.email,
+        ...user,
+        // username: user.username,
+        // email: user.email,
         password: hashedPassword,
       });
       console.log(createdUser);
