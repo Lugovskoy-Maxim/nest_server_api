@@ -30,7 +30,7 @@ export class AppController {
   @Post('auth/register')
   async register(@Body() body: RegisterUserDto) {
     try {
-      if (!body || !body.username || !body.password) {
+      if (!body || !body.login || !body.password) {
         throw new HttpException('Не все обязательные поля заполнены.', HttpStatus.BAD_REQUEST);
       }
       

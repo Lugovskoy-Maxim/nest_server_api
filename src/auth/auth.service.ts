@@ -2,9 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcrypt';
-import { UserDocument } from 'src/schemas/user.schema';
 import { LoginResponse, RegisterUserDto } from 'src/users/dto/registerUser.dto';
-import { MongooseError } from 'mongoose';
 
 @Injectable()
 export class AuthService {
@@ -20,8 +18,7 @@ export class AuthService {
   }
 
   async login(user: any): Promise<LoginResponse> {
-    const payload = { username: user.username, sub: user.id };
-    console.log(payload);
+    const payload = { login: user.login, sub: user.id };
     const accessToken = this.jwtService.sign(
       { payload },
       { secret: process.env.JWT_SECRET },
@@ -30,7 +27,7 @@ export class AuthService {
     const response: LoginResponse = {
       access_token: accessToken,
       userId: user.id,
-      username: user.username,
+      login: user.login,
       email: user.email,
     };
 
@@ -44,6 +41,7 @@ export class AuthService {
         ...user,
         password: hashedPassword,
       });
+      console.log(createdUser);
       return this.login(createdUser);
     } catch (error: any) {
       if (error.code === 11000) {
@@ -56,8 +54,8 @@ export class AuthService {
     }
   }
 
-  async validateUser(username: string, password: string): Promise<any> {
-    const user = await this.usersService.findOne(username);
+  async validateUser(login: string, password: string): Promise<any> {
+    const user = await this.usersService.findOne(login);
     if (user == undefined) {
       throw new Error('Пользователь не найден');
     }

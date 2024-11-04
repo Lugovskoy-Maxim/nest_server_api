@@ -8,7 +8,7 @@ export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
   async findOne(username: string): Promise<UserDocument | null> {
-    return await this.userModel.findOne({ username }).exec();
+    return await this.userModel.findOne({ login: username }).exec();
   }
 
   async create(userData: Partial<User>): Promise<User> {

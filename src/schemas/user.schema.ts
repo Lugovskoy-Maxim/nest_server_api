@@ -7,24 +7,39 @@ export type UserDocument = User & Document;
 @Schema({ timestamps: true, versionKey: false })
 export class User {
   @Prop({ required: true, unique: true })
-  username: string;
+  login: string;
 
   @Prop({ unique: true })
   email?: string;
+
+  @Prop({ required: true })
+  password: string;
+
+  @Prop({})
+  firstName: string;
+
+  @Prop({})
+  lastName: string;
 
   @Prop({
     default: false,
   })
   verifiedEmail: boolean;
 
-  @Prop({ required: true })
-  password: string;
+  @Prop()
+  phoneNumber?: string;
 
   @Prop()
   birthday?: Date;
 
-  @Prop({ default: ['user'] })
-  roles: string[];
+  @Prop()
+  avatar?: string;
+
+  @Prop()
+  sex?: 'male' | 'female';
+
+  @Prop({ default: ['user'] } )
+  roles?: string[];
 
   async comparePassword(password: string): Promise<boolean> {
     return await bcrypt.compare(password, this.password);
