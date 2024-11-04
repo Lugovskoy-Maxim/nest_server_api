@@ -54,7 +54,7 @@ export class User {
   @Prop({})
   lastName: string;
 
-  // Статус подтвержденния электронной почты (по умолчанию false)
+  // Статус подтверждения электронной почты (по умолчанию false)
   @Prop({
     default: false,
   })
