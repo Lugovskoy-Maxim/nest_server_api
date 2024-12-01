@@ -7,14 +7,16 @@ $ npm run start:dev
 # production mode
 $ npm run start:prod
 ```
+
 > Статус проекта: ещё не работает
 
 ## MVP функционал
+
 <details>
   <summary><b>Аунтификация</b></summary>
   
   - [x]  POST /register — Регистрация нового пользователя.
-  - [x]  POST /login — Аувторизация и получение токена.
+  - [x]  POST /login — Авторизация и получение токена.
  </details>
  
 <details>
