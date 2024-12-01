@@ -47,4 +47,3 @@ export class AppController {
   }
 }
 
-// curl -X POST http://localhost:3001/auth/register -d ' {"username": "john", "password": "changeme"}' -H "Content-Type: application/json"
