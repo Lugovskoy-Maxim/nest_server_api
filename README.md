@@ -13,6 +13,7 @@ $ npm run start:prod
 Поднять Монго БД в с помощью docker-compose
 
 ```bash
+cp docker-compose.dev.yml docker-compose.yml
 docker-compose up -d
 ```
 
