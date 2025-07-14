@@ -7,6 +7,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { getMongoConfig } from './configs/mongo.config';
 import { UsersModule } from './users/users.module';
 import { JwtModule } from '@nestjs/jwt';
+import { UsersController } from './users/user.controller';
 
 @Module({
   imports: [
@@ -20,11 +21,11 @@ import { JwtModule } from '@nestjs/jwt';
       useFactory: getMongoConfig,
     
     }),
-    AuthModule,
     ConfigModule.forRoot(),
+    AuthModule,
     UsersModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, UsersController],
   providers: [AppService],
 })
 export class AppModule {}
