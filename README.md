@@ -1,6 +1,9 @@
 # Как запустить
 
 ```bash
+# init
+$ npm ci
+
 # watch mode
 $ npm run start:dev
 
