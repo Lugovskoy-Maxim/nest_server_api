@@ -2,7 +2,7 @@
 
 ```bash
 # init
-$ npm ci
+$ npm install
 
 # watch mode
 $ npm run start:dev
