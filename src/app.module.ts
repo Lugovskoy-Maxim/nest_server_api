@@ -7,7 +7,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { getMongoConfig } from './configs/mongo.config';
 import { UsersModule } from './users/users.module';
 import { JwtModule } from '@nestjs/jwt';
-import { UsersController } from './users/user.controller';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -24,8 +24,9 @@ import { UsersController } from './users/user.controller';
     ConfigModule.forRoot(),
     AuthModule,
     UsersModule,
+    // MailModule, // пока не работает хз почему 
   ],
-  controllers: [AppController, UsersController],
+  controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}

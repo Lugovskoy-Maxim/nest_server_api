@@ -22,82 +22,60 @@ import { Roles } from '../auth/roles.decorator';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  private handleError(error: unknown, defaultMessage: string) {
+    if (error instanceof HttpException) throw error;
+    throw new HttpException(defaultMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
   // Получить данные текущего пользователя
   @Get('me')
   async getProfile(@Req() req: RequestWithUser) {
     try {
-    const userId = req.user.sub; 
-      const user = await this.usersService.findById(userId);
-      if (!user) {
-        throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
-      }
+      const user = await this.usersService.findById(req.user.sub);
+      if (!user) throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
       return user;
     } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      throw new HttpException(
-        'Не удалось получить данные пользователя',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      this.handleError(error, 'Не удалось получить данные пользователя');
     }
   }
 
-    // Получить всех пользователей (только для админов)
+  // Получить всех пользователей (только для админов)
   @Get('all')
   @Roles('admin')
   async getAllUsers() {
     try {
       return await this.usersService.findAll();
     } catch (error) {
-      throw new HttpException(
-        'Не удалось получить список пользователей',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      this.handleError(error, 'Не удалось получить список пользователей');
     }
   }
 
-  // Получить данные любого пользователя 
+  // Получить данные любого пользователя
   @Get(':id')
   async getUser(@Param('id') id: string) {
     try {
       const user = await this.usersService.findById(id);
-      if (!user) {
-        throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
-      }
+      if (!user) throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
       return user;
     } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      throw new HttpException(
-        'Ошибка при получении пользователя',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      this.handleError(error, 'Ошибка при получении пользователя');
     }
   }
 
   // Обновить данные пользователя
-  @Put('me')
+  @Put(':id')
   async updateProfile(
     @Req() req: RequestWithUser,
     @Body() updateUserDto: UpdateUserDto,
   ) {
     try {
-      const userId = req.user.sub;
-      const updatedUser = await this.usersService.update(userId, updateUserDto);
-      if (!updatedUser) {
-        throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
-      }
-      return updatedUser;
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      throw new HttpException(
-        'Не удалось обновить данные',
-        HttpStatus.BAD_REQUEST,
+      return await this.usersService.updateProfile(
+        req.user.sub,
+        updateUserDto,
+        req.user,
       );
+    } catch (error) {
+      this.handleError(error, 'Не удалось обновить данные');
     }
   }
 
@@ -105,21 +83,11 @@ export class UsersController {
   @Delete(':id')
   async deleteProfile(@Req() req: RequestWithUser) {
     try {
-      const userId = req.user.sub;
-      const deletedUser = await this.usersService.delete(userId);
-      if (!deletedUser) {
-        throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
-      }
+      const deletedUser = await this.usersService.delete(req.user.sub, req.user);
+      if (!deletedUser) throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
       return { message: 'Профиль успешно удален' };
     } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      throw new HttpException(
-        'Не удалось удалить профиль',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      this.handleError(error, 'Не удалось удалить профиль');
     }
   }
-
 }

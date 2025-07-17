@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { User, UserDocument } from '../schemas/user.schema';
@@ -53,49 +57,73 @@ export class UsersService {
   }
 
   // Обновление пользователя
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+  async updateProfile(
+    userId: string,
+    updateData: UpdateUserDto,
+    currentUser: { login?: string; roles?: string[]; sub: string },
+  ): Promise<User> {
+    // Проверка прав доступа
+    if (
+      currentUser.sub.toString() !== userId &&
+      !currentUser.roles?.includes('admin')
+    ) {
+      throw new ForbiddenException('Вы можете обновлять только свой профиль');
+    }
+
+    // Только администратор может изменять роли
+    if (updateData.roles && !currentUser.roles?.includes('admin')) {
+      throw new ForbiddenException('Только администратор может изменять роли');
+    }
+
+    // Запрет на изменение ролей самого себя (если не админ)
+    if (updateData.roles && currentUser.sub.toString() === userId) {
+      throw new ForbiddenException(
+        'Вы не можете изменять свои собственные роли',
+      );
+    }
+
     const updatedUser = await this.userModel
-      .findByIdAndUpdate(id, updateUserDto, { new: true })
+      .findByIdAndUpdate(userId, updateData, { new: true })
       .select('-password')
       .exec();
 
     if (!updatedUser) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      throw new NotFoundException(`Пользователь с ID ${userId} не найден`);
     }
 
     return updatedUser;
   }
 
   // Удаление пользователя
-  async delete(id: string): Promise<User> {
+  async delete(
+    userId: string,
+    currentUser: { sub: string; roles?: string[] },
+  ): Promise<User> {
+    // Проверка прав доступа: только свой аккаунт или админ
+    if (currentUser.sub !== userId && !currentUser.roles?.includes('admin')) {
+      throw new ForbiddenException('Вы можете удалить только свой профиль');
+    }
+
+    // Админ не может удалить свой аккаунт
+    if (currentUser.sub === userId && !currentUser.roles?.includes('admin')) {
+      throw new ForbiddenException('Вы не можете удалить свой аккаунт');
+    }
+
     const deletedUser = await this.userModel
-      .findByIdAndDelete(id)
+      .findByIdAndDelete(userId)
       .select('-password')
       .exec();
 
     if (!deletedUser) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      throw new NotFoundException(`Пользователь с ID ${userId} не найден`);
     }
 
     return deletedUser;
   }
 
-  // Поиск по email
+  // Поиск по email (ваш существующий метод)
   async findByEmail(email: string): Promise<UserDocument | null> {
     return this.userModel.findOne({ email });
-  }
-
-  // Активация email
-  async markEmailAsVerified(email: string): Promise<User> {
-    const updatedUser = await this.userModel
-      .findOneAndUpdate({ email }, { verifiedEmail: true }, { new: true })
-      .exec();
-
-    if (!updatedUser) {
-      throw new NotFoundException(`Пользователь с ${email} не найден`);
-    }
-
-    return updatedUser;
   }
 
   // Обновление пароля
